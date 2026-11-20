@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RaevYoU — отзывы покупателей</title>
+  <meta name="description" content="Отзывы о продавце RaevYoU: оценки, фото и ответы продавца. Прочитайте отзывы или оставьте свой.">
+  <meta name="theme-color" content="#000000">
+  <meta property="og:title" content="RaevYoU — отзывы покупателей">
+  <meta property="og:description" content="Отзывы о продавце RaevYoU: оценки, фото и ответы продавца.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%23000'/%3E%3Cpath fill='%23f2c14e' d='M12 4.6l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 9.9l5-.7z'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+
+  <div class="wrap">
+    <nav class="top" aria-label="Меню">
+      <a class="logo" href="#top">RaevYoU</a>
+      <div class="top__links">
+        <button class="link" id="aboutBtn" type="button">О продавце</button>
+        <a class="link" id="contactBtn" href="#" hidden>Связаться</a>
+      </div>
+    </nav>
+
+    <!-- ===== Первый экран ===== -->
+    <header class="hero" id="top">
+      <div class="hero__text">
+        <h1>RaevYoU</h1>
+        <p class="hero__lead">Честные сделки, быстрые ответы и живые отзывы. Всё, что написано ниже, оставили реальные покупатели.</p>
+        <div class="hero__cta">
+          <a class="btn btn--solid" href="#reviews">Читать отзывы</a>
+          <button class="btn" id="ctaNew" type="button">Оставить отзыв</button>
+        </div>
+        <ul class="trust">
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5L4.5 13.5h6.5l-1 8 8.5-11H12z"/></svg>Отвечаю быстро</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Всё как описано</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9.5L5 20.5v-4H4z"/></svg>На связи после покупки</li>
+        </ul>
+      </div>
+
+      <aside class="summary glass" id="summary" aria-label="Рейтинг продавца">
+        <div class="summary__top">
+          <span class="summary__avg" id="sumAvg">—</span>
+          <div class="summary__meta">
+            <span class="rating" id="sumStars" role="img"></span>
+            <span class="summary__count" id="sumCount">Загружаем отзывы…</span>
+          </div>
+        </div>
+        <div class="bars" id="sumBars"></div>
+        <span class="badge" id="happyWrap" hidden>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>
+          <span id="sumHappy"></span>
+        </span>
+      </aside>
+    </header>
+
+    <!-- ===== Отзывы ===== -->
+    <main class="reviews" id="reviews">
+      <div class="reviews__head">
+        <h2>Отзывы покупателей</h2>
+        <div class="tools">
+          <div class="chips" id="chips" role="group" aria-label="Фильтр отзывов">
+            <button class="chip is-on" type="button" data-f="all">Все</button>
+            <button class="chip" type="button" data-f="photo">С фото</button>
+            <button class="chip" type="button" data-f="reply">С ответом</button>
+          </div>
+          <label class="sort">
+            <span class="sr">Сортировка</span>
+            <select id="sort">
+              <option value="new">Сначала новые</option>
+              <option value="best">Лучшие оценки</option>
+              <option value="helpful">Самые полезные</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="grid" id="grid" aria-live="polite"></div>
+      <p class="noresults" id="noresults" hidden>По этому фильтру отзывов нет</p>
+
+      <div class="empty glass" id="empty" hidden>
+        <p class="empty__title">Пока нет ни одного отзыва</p>
+        <p class="empty__text">Станьте первым — нажмите кнопку «Оставить отзыв».</p>
+      </div>
+
+      <div class="empty glass" id="error" hidden>
+        <p class="empty__title">Не удалось загрузить отзывы</p>
+        <p class="empty__text">Проверьте интернет и попробуйте ещё раз.</p>
+        <button class="btn" id="retry" type="button">Повторить</button>
+      </div>
+
+      <div id="sentinel" aria-hidden="true"></div>
+    </main>
+
+    <footer class="foot">RaevYoU — честные сделки и быстрые ответы</footer>
+  </div>
+
+  <!-- ===== Плавающая кнопка ===== -->
+  <button class="fab" id="fab" type="button" data-mode="new">
+    <svg class="fab__icon fab__icon--plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    <svg class="fab__icon fab__icon--pencil" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 2.8 0l.2.2a2 2 0 0 1 0 2.8L8 19l-4 1z"/><path d="M14.5 6.5l3 3"/></svg>
+    <span id="fabText">Оставить отзыв</span>
+  </button>
+
+  <!-- ===== Окно отзыва ===== -->
+  <div class="modal" id="modal" aria-hidden="true" inert>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="x" id="close" type="button" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+
+      <h2 class="modal__title" id="modalTitle">Новый отзыв</h2>
+      <p class="modal__lead" id="modalLead">Придумайте никнейм и поставьте оценку.</p>
+
+      <div class="field">
+        <label class="label" for="nick">Никнейм</label>
+        <input class="input" id="nick" type="text" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Например, Georgiu">
+        <label class="anon"><input type="checkbox" id="anon"><span class="anon__box"></span><span>Оставить анонимно</span></label>
+      </div>
+
+      <div class="field">
+        <label class="label" for="product">Что купили (необязательно)</label>
+        <input class="input" id="product" type="text" maxlength="40" autocomplete="off" placeholder="Например, аккаунт, услуга, товар">
+      </div>
+
+      <div class="field">
+        <span class="label" id="ratingLabel">Оценка</span>
+        <div class="stars" id="stars" role="radiogroup" aria-labelledby="ratingLabel">
+          <button class="star" type="button" role="radio" aria-checked="false" aria-label="1 из 5" data-v="1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.2 1.2-6.5L2.5 9.5l6.6-.9z"/></svg></button>
+          <button class="star" type="button" role="radio" aria-checked="false" aria-label="2 из 5" data-v="2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.2 1.2-6.5L2.5 9.5l6.6-.9z"/></svg></button>
+          <button class="star" type="button" role="radio" aria-checked="false" aria-label="3 из 5" data-v="3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.2 1.2-6.5L2.5 9.5l6.6-.9z"/></svg></button>
+          <button class="star" type="button" role="radio" aria-checked="false" aria-label="4 из 5" data-v="4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.2 1.2-6.5L2.5 9.5l6.6-.9z"/></svg></button>
+          <button class="star" type="button" role="radio" aria-checked="false" aria-label="5 из 5" data-v="5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.2 1.2-6.5L2.5 9.5l6.6-.9z"/></svg></button>
+        </div>
+        <p class="hint" id="hint" aria-live="polite"></p>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label class="label" for="text">Отзыв</label>
+          <span class="counter" id="counter">0 / 500</span>
+        </div>
+        <textarea class="textarea" id="text" maxlength="500" rows="4" placeholder="Расскажите, как всё прошло (необязательно)"></textarea>
+        <div class="qtags">
+          <button type="button" class="qtag" data-t="Быстро">Быстро</button>
+          <button type="button" class="qtag" data-t="Вежливо">Вежливо</button>
+          <button type="button" class="qtag" data-t="Всё как описано">Всё как описано</button>
+          <button type="button" class="qtag" data-t="Отличное качество">Отличное качество</button>
+          <button type="button" class="qtag" data-t="Всегда на связи">Всегда на связи</button>
+        </div>
+      </div>
+
+      <div class="field" id="photoField">
+        <span class="label">Фото (необязательно)</span>
+        <label class="photo-pick" id="photoPick"><input type="file" id="photo" accept="image/*" hidden><span>+ Добавить фото</span></label>
+        <div class="photo-prev" id="photoPrev" hidden><img id="photoImg" alt=""><button type="button" id="photoDel" aria-label="Убрать фото">×</button></div>
+      </div>
+
+      <button class="btn btn--solid submit" id="submit" type="button" disabled>
+        <span id="submitText">Оставить отзыв</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p style="position:fixed;inset:auto 16px 16px;text-align:center;color:#fff">Для работы сайта нужен JavaScript.</p></noscript>
+  <script src="script.js"></script>
+</body>
+</html>
