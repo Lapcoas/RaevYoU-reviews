@@ -525,3 +525,26 @@ body{
 @media (prefers-reduced-motion:no-preference){
   .feature,.card,.review,.stats,.step,.qa,.modal-card{transition:border-color .3s,background .3s,box-shadow .3s}
 }
+
+
+/* Anonymous realtime chat */
+.rv-chat-fab{position:fixed;right:22px;bottom:22px;z-index:80;width:58px;height:58px;border:1px solid #ffdb76;border-radius:50%;background:linear-gradient(145deg,#ffe27a,#ffb900);color:#171106;font-size:25px;font-weight:900;box-shadow:0 12px 36px #0009,0 0 25px #ffc62933;transition:transform .2s}
+.rv-chat-fab:hover{transform:translateY(-3px) scale(1.04)}
+.rv-chat{--chat-bg:#10100d;--chat-panel:#17150f;--chat-line:#3b321d;position:fixed;right:22px;bottom:92px;z-index:81;width:min(370px,calc(100vw - 28px));height:min(540px,calc(100dvh - 125px));display:flex;flex-direction:column;background:var(--chat-bg);color:#fff;border:1px solid #705b26;border-radius:18px;overflow:hidden;box-shadow:0 25px 80px #000b;animation:rvChatIn .22s ease}
+.rv-chat[hidden]{display:none!important}.rv-chat.light{--chat-bg:#fffdf5;--chat-panel:#fff7df;--chat-line:#eadba9;color:#241d0b;border-color:#e3c66c}
+.rv-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 16px;background:var(--chat-panel);border-bottom:1px solid var(--chat-line)}
+.rv-chat-head b{display:block;font-size:14px}.rv-chat-head small{display:block;color:#b7a879;font-size:10px;margin-top:2px}
+.rv-chat.light .rv-chat-head small,.rv-chat.light .rv-chat-foot{color:#83764d}.rv-chat-tools{display:flex;gap:6px}
+.rv-chat-tools button{width:30px;height:30px;border:1px solid var(--chat-line);border-radius:8px;color:inherit;font-size:18px}
+.rv-chat-msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:14px;background:var(--chat-bg)}
+.rv-chat-empty{margin:auto;text-align:center;color:#a69a73;font-size:12px;max-width:240px}
+.rv-msg{max-width:85%;padding:10px 12px;border:1px solid var(--chat-line);border-radius:13px;background:var(--chat-panel);font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.rv-msg.visitor{align-self:flex-end;background:#493711;border-color:#806022;color:#fff5d9;border-bottom-right-radius:4px}
+.rv-chat.light .rv-msg.visitor{background:#fff0bd;color:#392a08}.rv-msg.admin{align-self:flex-start;border-bottom-left-radius:4px}
+.rv-msg time{display:block;font-size:9px;opacity:.58;margin-top:4px;text-align:right}
+.rv-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--chat-line);background:var(--chat-panel)}
+.rv-chat-form textarea{flex:1;min-width:0;max-height:110px;resize:none;border:1px solid var(--chat-line);border-radius:10px;padding:10px;background:var(--chat-bg);color:inherit;outline:none;font:inherit;font-size:12px}
+.rv-chat-form button{width:40px;border-radius:10px;background:linear-gradient(135deg,#ffe27a,#ffbd16);color:#1b1405;font-size:18px;font-weight:900}
+.rv-chat-foot{margin:0;padding:0 12px 9px;text-align:center;color:#8f835e;background:var(--chat-panel);font-size:9px}
+@keyframes rvChatIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:520px){.rv-chat-fab{right:14px;bottom:14px;width:54px;height:54px}.rv-chat{right:10px;bottom:78px;width:calc(100vw - 20px);height:min(600px,calc(100dvh - 95px))}}
