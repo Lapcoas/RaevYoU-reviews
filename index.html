@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RaevYoU — отзывы покупателей</title>
+<meta name="description" content="Отзывы покупателей RaevYoU. Честные сделки, реальные оценки, анонимные отзывы.">
+<meta name="theme-color" content="#090805">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#home">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.95 6.1 6.7.9-4.9 4.65 1.2 6.65L12 17.5l-5.95 3.3 1.2-6.65-4.9-4.65 6.7-.9z"/></svg>
+    <span>RaevYoU</span>
+  </a>
+  <nav class="nav" id="nav" aria-label="Разделы сайта">
+    <a href="#home" data-tab="home">Главная</a>
+    <a href="#reviews" data-tab="reviews">Отзывы</a>
+    <a href="#guarantees" data-tab="guarantees">Гарантии</a>
+    <a href="#how" data-tab="how">Как работает</a>
+    <a href="#faq" data-tab="faq">FAQ</a>
+    <span class="nav-ind" id="navInd"></span>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ===================== ГЛАВНАЯ ===================== -->
+  <section class="tab" id="tab-home" hidden>
+    <div class="hero wrap">
+      <p class="eyebrow">Отзывы покупателей</p>
+      <h1 class="title">RaevYoU</h1>
+      <p class="lead">Честные сделки. Реальные люди. Прозрачная репутация.</p>
+      <div class="cta">
+        <button class="btn btn-white" type="button" data-open-review>Написать отзыв</button>
+        <a class="btn btn-ghost" href="#reviews">Читать отзывы</a>
+      </div>
+    </div>
+
+    <div class="wrap features">
+      <article class="feature">
+        <span class="num">01</span>
+        <h3>Честные сделки</h3>
+        <p>Все условия обсуждаются заранее. Никаких скрытых платежей и сюрпризов после оплаты.</p>
+      </article>
+      <article class="feature">
+        <span class="num">02</span>
+        <h3>Открытые отзывы</h3>
+        <p>Любой покупатель может оставить оценку и комментарий. Всё видно сразу, прямо на сайте.</p>
+      </article>
+      <article class="feature">
+        <span class="num">03</span>
+        <h3>Свобода выбора</h3>
+        <p>Пишите под псевдонимом или полностью анонимно. Регистрация не нужна.</p>
+      </article>
+    </div>
+
+    <section class="wrap stats-wrap" aria-label="Статистика отзывов">
+      <div class="stats" id="stats">
+        <div class="stats-head">
+          <h2>Рейтинг покупателей</h2>
+          <span>по оценкам из отзывов</span>
+        </div>
+        <div class="stats-body">
+          <div class="stat-col">
+            <div class="col-t">Средняя оценка</div>
+            <div class="score-num"><span data-stat="avg">—</span><small>/ 5</small></div>
+            <div class="stars-row" data-stat="stars" aria-hidden="true"></div>
+            <div class="score-sub" data-stat="count">Пока нет отзывов</div>
+          </div>
+          <div class="stat-col">
+            <div class="col-t">Сколько поставили</div>
+            <div class="stat-bars" id="statBars" aria-hidden="true"></div>
+          </div>
+          <div class="stat-col side">
+            <div class="side-item">
+              <div class="col-t">Положительные</div>
+              <div class="side-num" data-stat="pct">—</div>
+              <div class="side-lbl">оценки 4 и 5 звёзд</div>
+            </div>
+            <div class="side-item">
+              <div class="col-t">Пятёрки</div>
+              <div class="side-num" data-stat="five">—</div>
+              <div class="side-lbl">оценок «5 звёзд»</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== ОТЗЫВЫ ===================== -->
+  <section class="tab" id="tab-reviews" hidden>
+    <div class="wrap page-head">
+      <p class="eyebrow">Что говорят покупатели</p>
+      <h2 class="h-xl">Отзывы</h2>
+      <div class="mini"><span class="mini-star">★</span> <b data-stat="avg-mini">—</b> <span class="dot">•</span> <span data-stat="count-mini">0 отзывов</span></div>
+    </div>
+    <div class="wrap">
+      <div class="chips" id="chips" role="tablist" aria-label="Фильтр по оценке">
+        <button class="chip active" data-f="0" type="button">Все</button>
+        <button class="chip" data-f="5" type="button">5 ★</button>
+        <button class="chip" data-f="4" type="button">4 ★</button>
+        <button class="chip" data-f="3" type="button">3 ★</button>
+        <button class="chip" data-f="2" type="button">2 ★</button>
+        <button class="chip" data-f="1" type="button">1 ★</button>
+      </div>
+      <div class="list" id="list" aria-live="polite"></div>
+      <div class="more-wrap"><button class="btn btn-ghost" id="moreBtn" type="button" hidden>Показать ещё</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== ГАРАНТИИ ===================== -->
+  <!-- Тексты ниже — шаблон. Отредактируйте под свои реальные условия. -->
+  <section class="tab" id="tab-guarantees" hidden>
+    <div class="wrap page-head">
+      <p class="eyebrow">Безопасность покупки</p>
+      <h2 class="h-xl">Гарантии</h2>
+      <p class="page-lead">Принципы, по которым я работаю с каждым покупателем.</p>
+    </div>
+    <div class="wrap grid2">
+      <article class="card g-card">
+        <span class="num">01</span>
+        <h3>Понятные условия</h3>
+        <p>Цена, сроки и состав покупки фиксируются до оплаты. Всё, о чём договорились, выполняется.</p>
+      </article>
+      <article class="card g-card">
+        <span class="num">02</span>
+        <h3>Решение спорных вопросов</h3>
+        <p>Если что-то пошло не так — напишите, и мы вместе найдём решение. Каждое обращение рассматривается лично.</p>
+      </article>
+      <article class="card g-card">
+        <span class="num">03</span>
+        <h3>Поддержка после покупки</h3>
+        <p>Остались вопросы после сделки? Я на связи и помогу разобраться.</p>
+      </article>
+      <article class="card g-card">
+        <span class="num">04</span>
+        <h3>Открытая репутация</h3>
+        <p>Рейтинг складывается только из оценок покупателей. Любой может прочитать их и оставить свою.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== КАК ЭТО РАБОТАЕТ ===================== -->
+  <section class="tab" id="tab-how" hidden>
+    <div class="wrap page-head">
+      <p class="eyebrow">Простой путь</p>
+      <h2 class="h-xl">Как это работает</h2>
+      <p class="page-lead">Четыре шага от знакомства до отзыва.</p>
+    </div>
+    <div class="wrap steps">
+      <div class="step"><span class="step-n">1</span><div><h3>Выбираете товар</h3><p>Определяетесь с тем, что хотите купить, и связываетесь для обсуждения деталей.</p></div></div>
+      <div class="step"><span class="step-n">2</span><div><h3>Согласуем условия</h3><p>Цена, сроки, способ оплаты и получения — всё проговаривается заранее.</p></div></div>
+      <div class="step"><span class="step-n">3</span><div><h3>Получаете товар</h3><p>Сделка проходит по договорённости. Если нужна помощь — я рядом.</p></div></div>
+      <div class="step"><span class="step-n">4</span><div><h3>Оставляете отзыв</h3><p>Поставьте оценку и по желанию напишите пару слов. Это занимает меньше минуты.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section class="tab" id="tab-faq" hidden>
+    <div class="wrap page-head">
+      <p class="eyebrow">Ответы на вопросы</p>
+      <h2 class="h-xl">FAQ</h2>
+    </div>
+    <div class="wrap faq" id="faq">
+      <div class="qa"><button class="q" type="button" aria-expanded="false"><span>Как оставить отзыв?</span><i></i></button><div class="a"><div><p>Нажмите кнопку «Написать отзыв» в углу экрана, введите имя, выберите оценку и при желании напишите комментарий.</p></div></div></div>
+      <div class="qa"><button class="q" type="button" aria-expanded="false"><span>Нужна ли регистрация?</span><i></i></button><div class="a"><div><p>Нет. Достаточно указать любое имя или псевдоним, либо отметить «Оставить анонимно».</p></div></div></div>
+      <div class="qa"><button class="q" type="button" aria-expanded="false"><span>Что значит «анонимно»?</span><i></i></button><div class="a"><div><p>Имя не сохраняется и не показывается. Отзыв будет подписан как «Аноним».</p></div></div></div>
+      <div class="qa"><button class="q" type="button" aria-expanded="false"><span>Обязательно ли писать текст?</span><i></i></button><div class="a"><div><p>Нет, можно поставить только оценку. Комментарий — по желанию.</p></div></div></div>
+      <div class="qa"><button class="q" type="button" aria-expanded="false"><span>Как считается рейтинг?</span><i></i></button><div class="a"><div><p>Рейтинг — среднее арифметическое всех оценок. Положительными считаются отзывы с оценкой 4 и 5 звёзд.</p></div></div></div>
+      <div class="qa"><button class="q" type="button" aria-expanded="false"><span>Можно ли изменить или удалить отзыв?</span><i></i></button><div class="a"><div><p>Самостоятельно отзыв изменить нельзя. Если нужно что-то исправить, свяжитесь с продавцом.</p></div></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span class="foot-brand">RaevYoU</span>
+    <span class="foot-copy">© <span id="year"></span> Все права защищены</span>
+  </div>
+</footer>
+
+<!-- Плавающая кнопка -->
+<button class="fab" id="fab" type="button" data-open-review aria-label="Написать отзыв">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.95 6.1 6.7.9-4.9 4.65 1.2 6.65L12 17.5l-5.95 3.3 1.2-6.65-4.9-4.65 6.7-.9z"/></svg>
+  <span>Написать отзыв</span>
+</button>
+
+<!-- Окно отзыва -->
+<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal-bg" data-close></div>
+  <div class="modal-card">
+    <button class="x" type="button" data-close aria-label="Закрыть">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
+    <div id="mForm">
+      <h2 id="mTitle">Ваш отзыв</h2>
+      <p class="m-sub">Расскажите, как прошла сделка</p>
+
+      <label class="lbl" for="fName">Имя или псевдоним</label>
+      <div class="afield" id="nameBox">
+        <input id="fName" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Например, Алексей">
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="fAnon">
+        <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        <span>Оставить анонимно</span>
+      </label>
+
+      <div class="lbl">Оценка</div>
+      <div class="stars-input" id="starsIn" role="radiogroup" aria-label="Оценка от 1 до 5"></div>
+      <div class="rate-label" id="rateLabel">Нажмите на звезду</div>
+
+      <div class="collapse" id="detailsWrap">
+        <div class="inner">
+          <label class="lbl" for="fText">Подробный отзыв <span class="opt">необязательно</span></label>
+          <div class="afield">
+            <textarea id="fText" rows="4" maxlength="500" placeholder="Например: всё отлично, быстро и честно"></textarea>
+          </div>
+          <div class="counter" id="counter">0 / 500</div>
+        </div>
+      </div>
+
+      <p class="hint" id="fHint">Введите имя или отметьте «Оставить анонимно»</p>
+
+      <div class="collapse" id="submitWrap">
+        <div class="inner">
+          <button class="btn btn-white btn-block" id="fSubmit" type="button">Оставить отзыв</button>
+        </div>
+      </div>
+      <p class="form-error" id="fError" hidden></p>
+    </div>
+
+    <div class="m-done" id="mDone" hidden>
+      <div class="done-ic"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h2>Спасибо за отзыв!</h2>
+      <p>Он уже появился на странице.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="supabase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
