@@ -253,7 +253,17 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<button id="rvChatFab" class="rv-chat-fab" type="button" aria-label="Открыть анонимный чат">✉</button>
+<section id="rvChat" class="rv-chat" aria-label="Анонимный чат" hidden>
+  <header class="rv-chat-head"><div><b>Анонимный чат</b><small id="rvChatStatus">Личное сообщение RaevYoU</small></div><div class="rv-chat-tools"><button id="rvChatTheme" type="button" title="Сменить тему">◐</button><button id="rvChatClose" type="button" title="Закрыть">×</button></div></header>
+  <div id="rvChatMsgs" class="rv-chat-msgs"><p class="rv-chat-empty">Напишите сообщение — оно попадёт напрямую в админ-панель.</p></div>
+  <form id="rvChatForm" class="rv-chat-form"><textarea id="rvChatText" maxlength="4000" rows="1" placeholder="Напишите сообщение…" required></textarea><button id="rvChatSend" type="submit" aria-label="Отправить">➤</button></form>
+  <p class="rv-chat-foot">Сообщения видны только вам и администратору</p>
+</section>
+
+
 <script src="supabase.js"></script>
+<script src="chat.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
