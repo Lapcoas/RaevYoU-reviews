@@ -30,8 +30,8 @@
   function normalize(r) {
     const rating = Number(r.rating);
     if (!(rating >= 1 && rating <= 5)) return null;
-    const nick = r.nick !== undefined ? r.nick : r.name;
-    const anon = !!(r.is_anon !== undefined ? r.is_anon : r.is_anonymous) || !nick;
+    const nick = r.author_name !== undefined ? r.author_name : (r.nick !== undefined ? r.nick : r.name);
+    const anon = !!(r.legacy_is_anon !== undefined ? r.legacy_is_anon : (r.is_anon !== undefined ? r.is_anon : r.is_anonymous)) || !nick || nick === 'Аноним';
     const body = r.body !== undefined ? r.body : r.text;
     return {
       id: r.id,
@@ -39,7 +39,9 @@
       anonymous: anon,
       rating: Math.round(rating),
       text: body ? String(body) : '',
-      created_at: r.created_at
+      created_at: r.created_at,
+      reply: r.reply || null,
+      reply_admin_name: r.reply_admin_name || null
     };
   }
 
@@ -74,73 +76,99 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(arr)); } catch (e) {}
   }
 
-  /* ---------- Публичный API ---------- */
+  /* ---------- Unified Supabase API: admin_reviews + anonymous visitor auth ---------- */
+  let sb = null;
+  function client() {
+    if (PREVIEW) return null;
+    if (!window.supabase || !window.supabase.createClient) throw fail('sdk', 'Supabase SDK не загружен');
+    if (!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storageKey: 'raev-review-auth', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    return sb;
+  }
+
+  async function ensureVisitor() {
+    if (PREVIEW) return { id: 'preview-visitor' };
+    const c = client();
+    const { data: sessionData, error: sessionError } = await c.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (sessionData && sessionData.session && sessionData.session.user) return sessionData.session.user;
+    const { data, error } = await c.auth.signInAnonymously();
+    if (error) throw fail('auth', 'Не удалось создать анонимную сессию. Включите Anonymous Sign-Ins в Supabase Auth.');
+    return data.user;
+  }
+
   async function list() {
     if (PREVIEW) {
-      await new Promise(r => setTimeout(r, 450));
+      await new Promise(r => setTimeout(r, 250));
       return localRead().map(normalize).filter(Boolean)
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
     if (!configured) throw fail('not_configured', 'Supabase не подключён');
+    const { data, error } = await client().from('admin_reviews')
+      .select('id,author_name,rating,body,reply,reply_admin_name,created_at,legacy_is_anon')
+      .eq('status', 'published').order('created_at', { ascending: false }).limit(1000);
+    if (error) throw fail('http', error.message || 'Ошибка загрузки отзывов');
+    return (data || []).map(normalize).filter(Boolean);
+  }
 
-    let res;
-    try {
-      res = await fetch(BASE + '/rest/v1/rpc/get_reviews_v2', {
-        method: 'POST', headers: headers(), body: JSON.stringify({ p_limit: 1000 })
-      });
-    } catch (e) { throw fail('network', 'Нет соединения с сервером'); }
-    if (!res.ok) throw fail('http', 'Ошибка загрузки: ' + res.status);
-    const data = await res.json();
-    return data.map(normalize).filter(Boolean);
+  async function mine() {
+    if (PREVIEW) return null;
+    const user = await ensureVisitor();
+    const { data, error } = await client().from('admin_reviews')
+      .select('id,author_name,rating,body,legacy_is_anon')
+      .eq('author_id', user.id).maybeSingle();
+    if (error) throw fail('mine', error.message || 'Не удалось проверить ваш отзыв');
+    return data ? normalize(data) : null;
   }
 
   async function create(input) {
     const rating = Math.round(Number(input.rating));
     const anonymous = !!input.anonymous;
-    const name = anonymous ? null : String(input.name || '').trim().slice(0, 24);
-    const text = String(input.text || '').trim().slice(0, 500);
-
+    const name = anonymous ? 'Аноним' : String(input.name || '').trim().slice(0, 40);
+    const body = String(input.text || '').trim().slice(0, 1500);
     if (!(rating >= 1 && rating <= 5)) throw fail('invalid', 'Поставьте оценку');
     if (!anonymous && !name) throw fail('invalid', 'Введите имя или отметьте «анонимно»');
-
-    const row = { name, rating, text: text || null, is_anonymous: anonymous };
+    if (!body) throw fail('invalid', 'Напишите текст отзыва');
 
     if (PREVIEW) {
-      await new Promise(r => setTimeout(r, 600));
       const arr = localRead();
-      arr.push(Object.assign({ id: 'local-' + Date.now(), created_at: new Date().toISOString() }, row));
+      arr.push({ id: 'local-' + Date.now(), name: anonymous ? null : name, anonymous, rating, text: body, created_at: new Date().toISOString() });
       localWrite(arr);
       return { pending: false };
     }
-    if (!configured) throw fail('not_configured', 'Supabase не подключён: вставьте URL и ключ в supabase.js');
-
-    // Секретный токен отзыва (функция базы требует не менее 32 символов)
-    const bytes = new Uint8Array(32);
-    crypto.getRandomValues(bytes);
-    const token = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-
-    let res;
-    try {
-      res = await fetch(BASE + '/rest/v1/rpc/add_review_v2', {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({
-          p_nick: name || '', p_rating: rating, p_body: text,
-          p_token: token, p_anon: anonymous
-        })
-      });
-    } catch (e) { throw fail('network', 'Нет соединения с сервером'); }
-
-    if (!res.ok) {
-      let msg = '';
-      try { msg = (await res.json()).message || ''; } catch (e) {}
-      if (/rate limit/i.test(msg)) throw fail('rate', 'Слишком много отзывов с вашего адреса. Попробуйте позже.');
-      throw fail('http', 'Не удалось отправить отзыв (' + res.status + ')');
+    const user = await ensureVisitor();
+    const { data: existing, error: lookupError } = await client().from('admin_reviews')
+      .select('id').eq('author_id', user.id).maybeSingle();
+    if (lookupError) throw fail('lookup', lookupError.message);
+    if (existing) throw fail('already_exists', 'Вы уже оставили отзыв. Откройте редактирование своего отзыва.');
+    const { error } = await client().from('admin_reviews').insert({
+      author_id: user.id, author_name: name, rating, body, status: 'published'
+    });
+    if (error) {
+      if (/one_review_per_user|duplicate key|unique/i.test(error.message || '')) throw fail('already_exists', 'Вы уже оставили отзыв. Измените существующий.');
+      throw fail('insert', error.message || 'Не удалось отправить отзыв');
     }
-    let out = {};
-    try { out = await res.json(); } catch (e) {}
-    return { pending: !!out.pending };
+    return { pending: false };
   }
 
-  window.ReviewsAPI = { list, create, configured, preview: PREVIEW };
+  async function update(input) {
+    const rating = Math.round(Number(input.rating));
+    const anonymous = !!input.anonymous;
+    const name = anonymous ? 'Аноним' : String(input.name || '').trim().slice(0, 40);
+    const body = String(input.text || '').trim().slice(0, 1500);
+    if (!(rating >= 1 && rating <= 5)) throw fail('invalid', 'Поставьте оценку');
+    if (!anonymous && !name) throw fail('invalid', 'Введите имя или отметьте «анонимно»');
+    if (!body) throw fail('invalid', 'Напишите текст отзыва');
+    const user = await ensureVisitor();
+    const { data, error } = await client().from('admin_reviews')
+      .update({ author_name: name, rating, body })
+      .eq('id', input.id).eq('author_id', user.id)
+      .select('id').maybeSingle();
+    if (error) throw fail('update', error.message || 'Не удалось сохранить изменения');
+    if (!data) throw fail('not_owner', 'Не удалось найти ваш отзыв для редактирования');
+    return { pending: false };
+  }
+
+  window.ReviewsAPI = { list, create, update, mine, client, ensureVisitor, configured, preview: PREVIEW };
 })();
