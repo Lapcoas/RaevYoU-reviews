@@ -353,7 +353,7 @@
   const rateLabel = $('#rateLabel'), counter = $('#counter');
   const starsIn = $('#starsIn');
   const LABELS = ['', 'Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'];
-  let rating = 0, hover = 0, lastFocus = null, sending = false;
+  let rating = 0, hover = 0, lastFocus = null, sending = false, editingReview = null;
 
   animatedField(fName);
   animatedField(fText);
@@ -423,7 +423,7 @@
   });
 
   function resetForm() {
-    rating = 0; hover = 0; sending = false;
+    rating = 0; hover = 0; sending = false; editingReview = null;
     fName.reset(); fText.reset();
     fAnon.checked = false; fName.disabled = false; nameBox.classList.remove('disabled');
     fError.hidden = true; fSubmit.disabled = false; fSubmit.textContent = 'Оставить отзыв';
@@ -440,13 +440,31 @@
     $('#mDone p').textContent = 'С одного устройства можно оставить только один отзыв. Спасибо!';
   }
 
-  function openModal() {
+  async function openModal() {
     lastFocus = document.activeElement;
     resetForm();
-    if (hasReviewed()) showAlready();
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('lock');
+    try {
+      const mine = await API.mine();
+      if (mine) {
+        editingReview = mine;
+        fName.value = mine.anonymous ? '' : (mine.name || '');
+        fName.dispatchEvent(new Event('input'));
+        fText.value = mine.text || '';
+        fText.dispatchEvent(new Event('input'));
+        fAnon.checked = !!mine.anonymous;
+        fAnon.dispatchEvent(new Event('change'));
+        rating = mine.rating || 0;
+        paintStars(); update();
+        fSubmit.textContent = 'Сохранить изменения';
+        $('#mDone h2').textContent = 'Редактирование отзыва';
+      }
+    } catch (e) {
+      fError.textContent = e.message || 'Не удалось проверить ваш отзыв';
+      fError.hidden = false;
+    }
     setTimeout(() => fName.focus({ preventScroll: true }), 350);
   }
   function closeModal() {
@@ -462,34 +480,26 @@
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
-  // Один отзыв с одного браузера/устройства
-  const DONE_KEY = PREVIEW ? 'raev_preview_reviewed' : 'raev_reviewed';
-  function hasReviewed() {
-    try { if (localStorage.getItem(DONE_KEY)) return true; } catch (e) {}
-    return document.cookie.split('; ').some(c => c.indexOf(DONE_KEY + '=') === 0);
-  }
-  function markReviewed() {
-    try { localStorage.setItem(DONE_KEY, '1'); } catch (e) {}
-    document.cookie = DONE_KEY + '=1; max-age=315360000; path=/; SameSite=Lax';
-  }
-
+  // Один отзыв на анонимного пользователя Supabase; существующий отзыв можно редактировать.
   fSubmit.addEventListener('click', async () => {
     if (sending || !canSubmit()) return;
     fError.hidden = true;
-    if (hasReviewed()) { showAlready(); return; }
-
-    sending = true; fSubmit.disabled = true; fSubmit.textContent = 'Отправляем…';
+    sending = true; fSubmit.disabled = true; fSubmit.textContent = 'Сохраняем…';
     try {
-      const out = await API.create({ name: fName.value, anonymous: fAnon.checked, rating, text: fText.value });
-      markReviewed();
+      const payload = { name: fName.value, anonymous: fAnon.checked, rating, text: fText.value };
+      const editing = !!editingReview;
+      if (editing) await API.update({ ...payload, id: editingReview.id });
+      else await API.create(payload);
       $('#mForm').hidden = true; $('#mDone').hidden = false;
-      $('#mDone p').textContent = out && out.pending ? 'Он появится после проверки.' : 'Он уже появился на странице.';
+      $('#mDone h2').textContent = editing ? 'Изменения сохранены' : 'Спасибо за отзыв!';
+      $('#mDone p').textContent = editing ? 'Ваш отзыв обновлён.' : 'Ваш отзыв опубликован.';
       load();
-      setTimeout(() => { closeModal(); toast(out && out.pending ? 'Отзыв отправлен на проверку' : 'Отзыв опубликован'); }, 1700);
+      setTimeout(() => { closeModal(); toast(editing ? 'Изменения сохранены' : 'Отзыв опубликован'); }, 1400);
     } catch (e) {
-      fError.textContent = e.message || 'Не удалось отправить отзыв';
+      fError.textContent = e.message || 'Не удалось сохранить отзыв';
       fError.hidden = false;
-      fSubmit.disabled = false; fSubmit.textContent = 'Оставить отзыв';
+      fSubmit.disabled = false;
+      fSubmit.textContent = editingReview ? 'Сохранить изменения' : 'Оставить отзыв';
       sending = false;
     }
   });
